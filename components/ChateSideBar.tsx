@@ -143,7 +143,12 @@ const SignOutIcon = () => (
 );
 
 const NAV_ITEMS = [
-  { label: "Dashboard", Icon: GuidedIcon, href: "/dashboard", key: "dashboard" },
+  {
+    label: "Dashboard",
+    Icon: GuidedIcon,
+    href: "/dashboard",
+    key: "dashboard",
+  },
   { label: "Journals", Icon: JournalIcon, href: "#", key: "journal" },
   { label: "Assessments", Icon: AssessmentIcon, href: "/assessments" },
   { label: "Wellness", Icon: WellnessIcon, href: "#", key: "wellness" },
@@ -264,10 +269,10 @@ export default function ChatSidebar({
           const isActive = key === "dashboard";
           const handleClick =
             key === "wellness"
-                ? () => onOpenWellness?.()
-                : key === "journal"
-                  ? () => onOpenJournal?.()
-                  : undefined;
+              ? () => onOpenWellness?.()
+              : key === "journal"
+                ? () => onOpenJournal?.()
+                : undefined;
 
           return (
             <Link
@@ -520,31 +525,32 @@ export default function ChatSidebar({
           flexShrink: 0,
         }}
       >
-        {[
-
-        ].map(({ Icon, label, href }) => (
-          <Link
-            key={label}
-            href={href}
-            style={{ ...navItemBase, fontSize: "13px" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "rgba(0,0,0,0.035)";
-              (e.currentTarget as HTMLElement).style.color =
-                "var(--text-primary)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.color =
-                "var(--text-secondary)";
-            }}
-          >
-            <span style={{ opacity: 0.6, flexShrink: 0 }}>
-              <Icon />
-            </span>
-            {label}
-          </Link>
-        ))}
+        {[{ Icon: SettingsIcon, label: "Settings", href: "/settings" }].map(
+          ({ Icon, label, href }) => (
+            <Link
+              key={label}
+              href={href}
+              style={{ ...navItemBase, fontSize: "13px" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background =
+                  "rgba(0,0,0,0.035)";
+                (e.currentTarget as HTMLElement).style.color =
+                  "var(--text-primary)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background =
+                  "transparent";
+                (e.currentTarget as HTMLElement).style.color =
+                  "var(--text-secondary)";
+              }}
+            >
+              <span style={{ opacity: 0.6, flexShrink: 0 }}>
+                <Icon />
+              </span>
+              {label}
+            </Link>
+          ),
+        )}
 
         <button
           onClick={onLogout}
