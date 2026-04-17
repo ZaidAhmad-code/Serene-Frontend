@@ -521,8 +521,7 @@ export default function ChatSidebar({
         }}
       >
         {[
-          { Icon: SettingsIcon, label: "Settings", href: "/settings" },
-          { Icon: PrivacyIcon, label: "Privacy", href: "/privacy" },
+
         ].map(({ Icon, label, href }) => (
           <Link
             key={label}
