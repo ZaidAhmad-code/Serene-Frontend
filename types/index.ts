@@ -185,3 +185,18 @@ export interface WellnessStats {
   minutes_practiced: number;
   favorite_exercise?: string;
 }
+
+export interface JournalEntry {
+  id: string;
+  text: string;
+  mood: string;
+  date: string; // ISO string
+  wordCount: number;
+}
+
+export type JournalMood = 'Calm' | 'Happy' | 'Anxious' | 'Sad' | 'Overwhelmed' | 'Grateful' | '';
+
+export interface JournalStore {
+  entries: JournalEntry[];
+  version: number;
+}
