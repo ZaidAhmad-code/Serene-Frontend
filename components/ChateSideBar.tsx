@@ -14,6 +14,7 @@ interface ChatSidebarProps {
   onLogout?: () => void;
   username?: string;
   email?: string;
+  onOpenJournal?: () => void;
 }
 
 /* ── tiny SVG icons ── */
@@ -143,9 +144,8 @@ const SignOutIcon = () => (
 
 const NAV_ITEMS = [
   { label: "Guided Sessions", Icon: GuidedIcon, href: "#", key: "dashboard" },
-  { label: "Journals", Icon: JournalIcon, href: "/journal" },
-  { label: "Coping Tools", Icon: CopingIcon, href: "/coping" },
-  { label: "Daily Reflection", Icon: ReflectionIcon, href: "/reflection" },
+  { label: "Journals", Icon: JournalIcon, href: "#", key: "journal" },
+
   { label: "Assessments", Icon: AssessmentIcon, href: "/assessments" },
   { label: "Wellness", Icon: WellnessIcon, href: "#", key: "wellness" },
 ];
@@ -181,6 +181,7 @@ export default function ChatSidebar({
   onLogout,
   username,
   email,
+  onOpenJournal,
 }: ChatSidebarProps) {
   return (
     <aside
@@ -267,7 +268,9 @@ export default function ChatSidebar({
               ? () => onOpenDashboard?.()
               : key === "wellness"
                 ? () => onOpenWellness?.()
-                : undefined;
+                : key === "journal"
+                  ? () => onOpenJournal?.()
+                  : undefined;
 
           return (
             <Link

@@ -12,6 +12,7 @@ import ProfileModal from "@/components/modals/ProfileModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useChat } from "@/hooks/useChat";
 import { ToastMessage } from "@/types";
+import JournalModal from "@/components/modals/JournlaModel";
 
 export default function Home() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function Home() {
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [wellnessOpen, setWellnessOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.push("/login");
@@ -120,6 +122,7 @@ export default function Home() {
             onLogout={handleLogout}
             username={user.username}
             email={user.email}
+            onOpenJournal={() => setJournalOpen(true)}
           />
         )}
 
@@ -211,6 +214,7 @@ export default function Home() {
         isOpen={dashboardOpen}
         onClose={() => setDashboardOpen(false)}
       />
+
       <WellnessModal
         isOpen={wellnessOpen}
         onClose={() => setWellnessOpen(false)}
@@ -221,6 +225,10 @@ export default function Home() {
         user={user}
         onLogout={handleLogout}
         onToast={addToast}
+      />
+      <JournalModal
+        isOpen={journalOpen}
+        onClose={() => setJournalOpen(false)}
       />
     </>
   );
