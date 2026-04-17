@@ -143,9 +143,8 @@ const SignOutIcon = () => (
 );
 
 const NAV_ITEMS = [
-  { label: "Guided Sessions", Icon: GuidedIcon, href: "#", key: "dashboard" },
+  { label: "Dashboard", Icon: GuidedIcon, href: "/dashboard", key: "dashboard" },
   { label: "Journals", Icon: JournalIcon, href: "#", key: "journal" },
-
   { label: "Assessments", Icon: AssessmentIcon, href: "/assessments" },
   { label: "Wellness", Icon: WellnessIcon, href: "#", key: "wellness" },
 ];
@@ -264,9 +263,7 @@ export default function ChatSidebar({
         {NAV_ITEMS.map(({ label, Icon, href, key }) => {
           const isActive = key === "dashboard";
           const handleClick =
-            key === "dashboard"
-              ? () => onOpenDashboard?.()
-              : key === "wellness"
+            key === "wellness"
                 ? () => onOpenWellness?.()
                 : key === "journal"
                   ? () => onOpenJournal?.()

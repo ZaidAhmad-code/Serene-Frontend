@@ -116,6 +116,31 @@ export default function MessageBubble({ message }: Props) {
           )}
         </div>
 
+        {/* Crisis alert banner */}
+        {message.isCrisis && (
+          <div style={{
+            marginTop: '8px',
+            padding: '12px 14px',
+            borderRadius: '12px',
+            background: 'rgba(184,90,74,0.08)',
+            border: '1px solid rgba(184,90,74,0.25)',
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'flex-start',
+            maxWidth: '100%',
+          }}>
+            <span style={{ fontSize: '16px', flexShrink: 0 }}>🆘</span>
+            <div>
+              <p style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--danger)', margin: '0 0 3px' }}>
+                Crisis Support Available
+              </p>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                You&apos;re not alone. Please reach out — tap <strong>⚠️ Immediate Help</strong> below for crisis resources.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Timestamp */}
         <span style={{
           fontSize: '10.5px',

@@ -1,14 +1,15 @@
 "use client";
 import { useCallback, useState } from "react";
 import { chatAPI } from "@/libs/api";
-import { ChatSession, Message, StreamEvent } from "@/types";
+import { ChatSession, CrisisResource, Message, StreamEvent } from "@/types";
 
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  // ✅ Fix: id is number (matches ChatSession.id: number from Flask int PK)
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [crisisDetected, setCrisisDetected] = useState(false);
+  const [crisisResources, setCrisisResources] = useState<CrisisResource[] | null>(null);
 
   const loadSessions = useCallback(async () => {
     try {
@@ -51,6 +52,8 @@ export function useChat() {
   const startNewChat = useCallback(() => {
     setMessages([]);
     setCurrentSessionId(null);
+    setCrisisDetected(false);
+    setCrisisResources(null);
   }, []);
 
   const deleteSession = useCallback(
@@ -113,6 +116,12 @@ export function useChat() {
               ),
             );
 
+            // Auto-trigger crisis UI when backend flags it
+            if (doneEvent.crisis_detected) {
+              setCrisisDetected(true);
+              setCrisisResources(doneEvent.crisis_resources ?? null);
+            }
+
             // This is the missing piece — persist session across messages
             if (doneEvent.session_id) {
               setCurrentSessionId(doneEvent.session_id);
@@ -160,6 +169,9 @@ export function useChat() {
     sessions,
     currentSessionId,
     isStreaming,
+    crisisDetected,
+    crisisResources,
+    dismissCrisis: () => { setCrisisDetected(false); setCrisisResources(null); },
     loadSessions,
     loadSession,
     startNewChat,

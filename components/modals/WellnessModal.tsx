@@ -6,20 +6,15 @@ interface WellnessModalProps {
   onClose: () => void;
 }
 
-/* ── Breathing patterns ── */
 const PATTERNS = [
-  { label: 'Box Breathing', inhale: 4, hold1: 4, exhale: 4, hold2: 4, desc: 'Equal 4-4-4-4 — great for focus & calm.' },
-  { label: '4-7-8 Breathing', inhale: 4, hold1: 7, exhale: 8, hold2: 0, desc: 'Inhale 4s · hold 7s · exhale 8s — promotes deep relaxation.' },
-  { label: 'Belly Breathing', inhale: 5, hold1: 0, exhale: 5, hold2: 0, desc: 'Slow diaphragmatic breaths — reduces stress instantly.' },
+  { label: 'Box', inhale: 4, hold1: 4, exhale: 4, hold2: 4, desc: '4-4-4-4 · Perfect for focus & calm.' },
+  { label: '4-7-8', inhale: 4, hold1: 7, exhale: 8, hold2: 0, desc: '4s in · 7s hold · 8s out · Deep relaxation.' },
+  { label: 'Belly', inhale: 5, hold1: 0, exhale: 5, hold2: 0, desc: '5-5 · Diaphragmatic · Instant stress relief.' },
 ];
 
 type Phase = 'inhale' | 'hold1' | 'exhale' | 'hold2';
-const PHASE_LABELS: Record<Phase, string> = {
-  inhale: 'Inhale',
-  hold1: 'Hold',
-  exhale: 'Exhale',
-  hold2: 'Hold',
-};
+const PHASE_LABELS: Record<Phase, string> = { inhale: 'Inhale', hold1: 'Hold', exhale: 'Exhale', hold2: 'Hold' };
+const PHASE_COLORS: Record<Phase, string> = { inhale: '#0ea5e9', hold1: '#f59e0b', exhale: '#10b981', hold2: '#f59e0b' };
 
 function BreathingTab() {
   const [patternIdx, setPatternIdx] = useState(0);
@@ -48,21 +43,15 @@ function BreathingTab() {
 
   const stop = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    setRunning(false);
-    setPhase('inhale');
-    setCount(0);
-    setCycles(0);
+    setRunning(false); setPhase('inhale'); setCount(0); setCycles(0);
     stateRef.current = { phase: 'inhale', count: 0 };
   };
 
   const start = () => {
-    const initialDuration = getPhaseDuration('inhale');
-    setPhase('inhale');
-    setCount(initialDuration);
-    setCycles(0);
-    stateRef.current = { phase: 'inhale', count: initialDuration };
+    const dur = getPhaseDuration('inhale');
+    setPhase('inhale'); setCount(dur); setCycles(0);
+    stateRef.current = { phase: 'inhale', count: dur };
     setRunning(true);
-
     intervalRef.current = setInterval(() => {
       stateRef.current.count -= 1;
       if (stateRef.current.count <= 0) {
@@ -70,8 +59,7 @@ function BreathingTab() {
         if (np === 'inhale') setCycles(c => c + 1);
         const nd = getPhaseDuration(np);
         stateRef.current = { phase: np, count: nd };
-        setPhase(np);
-        setCount(nd);
+        setPhase(np); setCount(nd);
       } else {
         setCount(stateRef.current.count);
       }
@@ -80,108 +68,90 @@ function BreathingTab() {
 
   useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
 
-  /* circle animation scale */
-  const circleScale = phase === 'inhale' ? 1 : phase === 'exhale' ? 0.55 : 0.9;
+  const circleScale = running ? (phase === 'inhale' ? 1 : phase === 'exhale' ? 0.52 : 0.82) : 0.65;
   const phaseDuration = running ? getPhaseDuration(phase) : 1;
   const progressPct = running ? ((phaseDuration - count) / phaseDuration) * 100 : 0;
-
-  const phaseColors: Record<Phase, string> = {
-    inhale: 'var(--color-text-info)',
-    hold1: 'var(--color-text-warning)',
-    exhale: 'var(--color-text-success)',
-    hold2: 'var(--color-text-warning)',
-  };
+  const phaseColor = running ? PHASE_COLORS[phase] : '#94a3b8';
+  const circumference = 2 * Math.PI * 72;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Pattern selector */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      {/* Pattern pills */}
+      <div style={{ display: 'flex', gap: '8px' }}>
         {PATTERNS.map((p, i) => (
-          <button
-            key={p.label}
-            onClick={() => { stop(); setPatternIdx(i); }}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '20px',
-              border: `1px solid ${patternIdx === i ? 'var(--color-border-info)' : 'var(--color-border-tertiary)'}`,
-              background: patternIdx === i ? 'var(--color-background-info)' : 'var(--color-background-secondary)',
-              color: patternIdx === i ? 'var(--color-text-info)' : 'var(--color-text-secondary)',
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
-          >
+          <button key={p.label} onClick={() => { stop(); setPatternIdx(i); }}
+            style={{ padding: '7px 18px', borderRadius: '20px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', border: 'none', background: patternIdx === i ? 'var(--accent-primary)' : 'var(--bg-tertiary)', color: patternIdx === i ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s' }}>
             {p.label}
           </button>
         ))}
       </div>
+      <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.6 }}>{pattern.desc}</p>
 
-      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>{pattern.desc}</p>
-
-      {/* Circle */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '8px 0' }}>
-        <div style={{ position: 'relative', width: '160px', height: '160px' }}>
+      {/* Big circle */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', padding: '16px 0' }}>
+        <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+          {/* Glow */}
+          {running && (
+            <div style={{ position: 'absolute', inset: '20px', borderRadius: '50%', background: phaseColor, opacity: 0.12, filter: 'blur(20px)', transform: `scale(${circleScale})`, transition: `transform ${phase === 'inhale' ? pattern.inhale : phase === 'exhale' ? pattern.exhale : 0.3}s ease-in-out` }} />
+          )}
           {/* Progress ring */}
-          <svg width="160" height="160" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-            <circle cx="80" cy="80" r="72" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="4" />
-            <circle
-              cx="80" cy="80" r="72" fill="none"
-              stroke={running ? phaseColors[phase] : 'var(--color-border-tertiary)'}
-              strokeWidth="4"
-              strokeDasharray={`${2 * Math.PI * 72}`}
-              strokeDashoffset={`${2 * Math.PI * 72 * (1 - progressPct / 100)}`}
+          <svg width="200" height="200" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
+            <circle cx="100" cy="100" r="72" fill="none" stroke="var(--border-color)" strokeWidth="5" />
+            <circle cx="100" cy="100" r="72" fill="none" stroke={phaseColor} strokeWidth="5"
+              strokeDasharray={`${circumference}`}
+              strokeDashoffset={`${circumference * (1 - progressPct / 100)}`}
               strokeLinecap="round"
-              style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
-            />
+              style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.4s ease' }} />
           </svg>
-          {/* Breathing circle */}
+          {/* Breathing orb */}
           <div style={{
             position: 'absolute', top: '50%', left: '50%',
-            transform: `translate(-50%, -50%) scale(${running ? circleScale : 0.7})`,
+            width: '130px', height: '130px',
+            transform: `translate(-50%, -50%) scale(${circleScale})`,
             transition: `transform ${phase === 'inhale' ? pattern.inhale : phase === 'exhale' ? pattern.exhale : 0.3}s ease-in-out`,
-            width: '110px', height: '110px', borderRadius: '50%',
-            background: 'var(--color-background-info)',
-            border: '1px solid var(--color-border-tertiary)',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: '2px',
+            borderRadius: '50%',
+            background: running
+              ? `radial-gradient(circle, ${phaseColor}30 0%, ${phaseColor}10 60%, transparent 100%)`
+              : 'radial-gradient(circle, rgba(148,163,184,0.15) 0%, transparent 70%)',
+            border: `2px solid ${phaseColor}40`,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
+            boxShadow: running ? `0 0 40px ${phaseColor}25` : 'none',
           }}>
-            <span style={{ fontSize: '26px', fontWeight: 500, color: running ? phaseColors[phase] : 'var(--color-text-secondary)', transition: 'color 0.3s' }}>
+            <span style={{ fontSize: '34px', fontWeight: 700, color: phaseColor, transition: 'color 0.4s', lineHeight: 1, fontFamily: 'DM Serif Display, serif' }}>
               {running ? count : '·'}
             </span>
-            <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', letterSpacing: '0.04em' }}>
-              {running ? PHASE_LABELS[phase] : 'ready'}
+            <span style={{ fontSize: '12px', color: running ? phaseColor : 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.05em', transition: 'color 0.4s' }}>
+              {running ? PHASE_LABELS[phase] : 'Ready'}
             </span>
           </div>
         </div>
 
         {running && (
-          <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {Array.from({ length: Math.max(cycles, 1) }, (_, i) => (
+                <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: i < cycles ? 'var(--accent-primary)' : 'var(--bg-tertiary)' }} />
+              ))}
+            </div>
             Cycle {cycles + 1}
-          </p>
+          </div>
         )}
 
-        <button
-          onClick={running ? stop : start}
-          style={{
-            padding: '10px 32px',
-            borderRadius: '10px',
-            border: '1px solid var(--color-border-secondary)',
-            background: running ? 'var(--color-background-danger)' : 'var(--color-background-success)',
-            color: running ? 'var(--color-text-danger)' : 'var(--color-text-success)',
-            fontSize: '14px',
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
-        >
-          {running ? 'Stop' : 'Start Breathing'}
+        <button onClick={running ? stop : start} style={{
+          padding: '12px 36px', borderRadius: '14px', border: 'none', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+          background: running ? 'rgba(239,68,68,0.1)' : 'linear-gradient(135deg, #2d5a3d, #4a7c59)',
+          color: running ? '#ef4444' : '#fff',
+          boxShadow: running ? 'none' : '0 6px 20px rgba(45,90,61,0.3)',
+          transition: 'all 0.2s',
+        }}>
+          {running ? 'Stop' : '▶ Start Breathing'}
         </button>
       </div>
     </div>
   );
 }
 
-/* ── Mindful Walking Tab ── */
-const WALK_TOTAL = 10 * 60; // 10 minutes
-
+const WALK_TOTAL = 10 * 60;
 const WALK_CUES = [
   { at: 600, text: 'Begin walking at a comfortable pace. Feel the ground beneath each step.' },
   { at: 480, text: 'Notice the sensation of each footfall — heel, arch, toe.' },
@@ -201,29 +171,23 @@ function WalkingTab() {
 
   const stop = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    setRunning(false);
-    setTimeLeft(WALK_TOTAL);
-    timeRef.current = WALK_TOTAL;
-    setCueText('');
+    setRunning(false); setTimeLeft(WALK_TOTAL); timeRef.current = WALK_TOTAL; setCueText('');
   };
 
   const start = () => {
     timeRef.current = WALK_TOTAL;
     setTimeLeft(WALK_TOTAL);
-    setCueText('Find a safe place to walk. Start whenever you\'re ready.');
+    setCueText("Find a safe place to walk. Start whenever you're ready.");
     setRunning(true);
-
     intervalRef.current = setInterval(() => {
       timeRef.current -= 1;
       setTimeLeft(timeRef.current);
-
       const cue = WALK_CUES.find(c => c.at === timeRef.current);
       if (cue) setCueText(cue.text);
-
       if (timeRef.current <= 0) {
         clearInterval(intervalRef.current!);
         setRunning(false);
-        setCueText('Well done. Your mindful walk is complete.');
+        setCueText('Well done. Your mindful walk is complete. 🌿');
       }
     }, 1000);
   };
@@ -233,206 +197,117 @@ function WalkingTab() {
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
   const progress = ((WALK_TOTAL - timeLeft) / WALK_TOTAL) * 100;
-  const circumference = 2 * Math.PI * 68;
+  const circumference = 2 * Math.PI * 72;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '22px' }}>
       {/* Timer ring */}
-      <div style={{ position: 'relative', width: '170px', height: '170px' }}>
-        <svg width="170" height="170" style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx="85" cy="85" r="68" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="5" />
-          <circle
-            cx="85" cy="85" r="68" fill="none"
-            stroke="var(--color-text-success)"
-            strokeWidth="5"
+      <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+        {running && <div style={{ position: 'absolute', inset: '20px', borderRadius: '50%', background: '#10b981', opacity: 0.08, filter: 'blur(18px)' }} />}
+        <svg width="200" height="200" style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx="100" cy="100" r="72" fill="none" stroke="var(--border-color)" strokeWidth="5" />
+          <circle cx="100" cy="100" r="72" fill="none" stroke="#10b981" strokeWidth="5"
             strokeDasharray={`${circumference}`}
             strokeDashoffset={`${circumference * (1 - progress / 100)}`}
             strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.9s linear' }}
-          />
+            style={{ transition: 'stroke-dashoffset 0.9s linear' }} />
         </svg>
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          textAlign: 'center',
-        }}>
-          <div style={{ fontSize: '30px', fontWeight: 500, color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-            {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', textAlign: 'center' }}>
+          <div style={{ fontSize: '36px', fontWeight: 700, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums', fontFamily: 'DM Serif Display, serif' }}>
+            {String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>remaining</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>remaining</div>
         </div>
       </div>
 
-      {/* Cue card */}
-      <div style={{
-        minHeight: '52px', padding: '12px 16px',
-        background: 'var(--color-background-secondary)',
-        border: '0.5px solid var(--color-border-tertiary)',
-        borderRadius: 'var(--border-radius-lg)',
-        width: '100%', textAlign: 'center',
-      }}>
-        <p style={{ fontSize: '13.5px', color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0 }}>
+      <div style={{ padding: '16px 20px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', textAlign: 'center', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
           {cueText || '10-minute mindful walk with gentle cues throughout.'}
         </p>
       </div>
 
-      <button
-        onClick={running ? stop : start}
-        style={{
-          padding: '10px 32px',
-          borderRadius: '10px',
-          border: '1px solid var(--color-border-secondary)',
-          background: running ? 'var(--color-background-danger)' : 'var(--color-background-success)',
-          color: running ? 'var(--color-text-danger)' : 'var(--color-text-success)',
-          fontSize: '14px', fontWeight: 500, cursor: 'pointer',
-        }}
-      >
-        {running ? 'Stop Walk' : 'Start Walk'}
+      <button onClick={running ? stop : start} style={{
+        padding: '12px 36px', borderRadius: '14px', border: 'none', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+        background: running ? 'rgba(239,68,68,0.1)' : 'linear-gradient(135deg,#10b981,#34d399)',
+        color: running ? '#ef4444' : '#fff',
+        boxShadow: running ? 'none' : '0 6px 20px rgba(16,185,129,0.3)',
+        transition: 'all 0.2s',
+      }}>
+        {running ? 'Stop Walk' : '🚶 Start Walk'}
       </button>
     </div>
   );
 }
 
-/* ── Music Tab ── */
 function MusicTab() {
+  const playlists = [
+    { name: 'Rain & Nature', icon: '🌧️', url: 'https://www.youtube.com/results?search_query=rain+sounds+sleep', desc: 'Calm rain and forest sounds' },
+    { name: 'Lo-fi Focus', icon: '🎵', url: 'https://www.youtube.com/results?search_query=lofi+hip+hop+study', desc: 'Gentle beats to focus' },
+    { name: 'Calm.com', icon: '🧘', url: 'https://www.calm.com/', desc: 'Guided meditation & music' },
+    { name: 'Ocean Waves', icon: '🌊', url: 'https://www.youtube.com/results?search_query=ocean+waves+relaxing', desc: 'Soothing coastal sounds' },
+  ];
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', padding: '12px 0' }}>
-      <div style={{
-        width: '80px', height: '80px', borderRadius: '50%',
-        background: 'var(--color-background-info)',
-        border: '0.5px solid var(--color-border-tertiary)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--color-text-info)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 6v14M12 6l12-3v14M24 17c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3zM12 20c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z"/>
-        </svg>
-      </div>
-
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>
-          Listen to calm music
-        </p>
-        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
-          Curated soundscapes and music designed to reduce stress and aid focus.
-        </p>
-      </div>
-
-      <a
-        href="https://www.calm.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          padding: '10px 28px',
-          borderRadius: '10px',
-          border: '1px solid var(--color-border-info)',
-          background: 'var(--color-background-info)',
-          color: 'var(--color-text-info)',
-          fontSize: '14px', fontWeight: 500,
-          textDecoration: 'none',
-          cursor: 'pointer',
-        }}
-      >
-        Open Calm →
-      </a>
-
-      <p style={{ fontSize: '11.5px', color: 'var(--color-text-tertiary)', margin: 0 }}>
-        Opens calm.com in a new tab
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+        Curated soundscapes and music designed to reduce stress and promote focus.
       </p>
+      {playlists.map(p => (
+        <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 18px', borderRadius: '16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', textDecoration: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(45,90,61,0.12)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg,#2d5a3d,#4a7c59)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>{p.icon}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{p.name}</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{p.desc}</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><path d="M4 8h8M9 5l3 3-3 3" /></svg>
+        </a>
+      ))}
     </div>
   );
 }
 
-/* ── Main Modal ── */
 type Tab = 'breathing' | 'walking' | 'music';
-
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'breathing', label: 'Breathing' },
-  { key: 'walking',   label: 'Mindful Walk' },
-  { key: 'music',     label: 'Calm Music' },
+const TABS: { key: Tab; label: string; icon: string }[] = [
+  { key: 'breathing', label: 'Breathing', icon: '🫁' },
+  { key: 'walking',   label: 'Mindful Walk', icon: '🚶' },
+  { key: 'music',     label: 'Calm Music', icon: '🎵' },
 ];
 
 export default function WellnessModal({ isOpen, onClose }: WellnessModalProps) {
   const [tab, setTab] = useState<Tab>('breathing');
-
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 2000,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
-      }}
-      onClick={e => e.target === e.currentTarget && onClose()}
-    >
-      <div style={{
-        width: '90%', maxWidth: '520px',
-        maxHeight: '88vh', overflowY: 'auto',
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
-        borderRadius: '18px',
-        boxShadow: 'var(--shadow-lg)',
-        display: 'flex', flexDirection: 'column',
-      }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ width: '90%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '24px', boxShadow: '0 32px 80px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <div style={{
-          padding: '18px 24px 0',
-          borderBottom: '1px solid var(--border-color)',
-          flexShrink: 0,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '30px', height: '30px', borderRadius: '8px',
-                background: 'linear-gradient(135deg, #2d5a3d, #4a7c59)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round">
-                  <path d="M8 13.5S2 9.5 2 5.5C2 3.5 3.5 2 5.5 2c1.1 0 2 .6 2.5 1.5C8.5 2.6 9.4 2 10.5 2 12.5 2 14 3.5 14 5.5c0 4-6 8-6 8z"/>
-                </svg>
+        <div style={{ padding: '22px 24px 0', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '11px', background: 'linear-gradient(135deg,#2d5a3d,#4a7c59)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(45,90,61,0.3)' }}>
+                <span style={{ fontSize: '18px' }}>🌿</span>
               </div>
-              <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-                Wellness Center
-              </h2>
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, fontFamily: 'DM Serif Display, serif' }}>Wellness Center</h2>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>Take a moment for yourself</p>
+              </div>
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                width: '30px', height: '30px', border: 'none',
-                background: 'var(--bg-tertiary)', borderRadius: '8px',
-                cursor: 'pointer', color: 'var(--text-muted)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                <path d="M3 3l10 10M13 3L3 13"/>
-              </svg>
-            </button>
+            <button onClick={onClose} style={{ width: '32px', height: '32px', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)', borderRadius: '10px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>×</button>
           </div>
-
           {/* Tabs */}
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', gap: '4px' }}>
             {TABS.map(t => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                style={{
-                  padding: '8px 18px',
-                  background: 'transparent', border: 'none',
-                  borderBottom: tab === t.key ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                  color: tab === t.key ? 'var(--accent-primary)' : 'var(--text-muted)',
-                  fontSize: '13.5px', fontWeight: tab === t.key ? 600 : 400,
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                {t.label}
+              <button key={t.key} onClick={() => setTab(t.key)} style={{ flex: 1, padding: '9px 12px', background: 'transparent', border: 'none', borderBottom: tab === t.key ? '2.5px solid var(--accent-primary)' : '2.5px solid transparent', color: tab === t.key ? 'var(--accent-primary)' : 'var(--text-muted)', fontSize: '13px', fontWeight: tab === t.key ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <span>{t.icon}</span>{t.label}
               </button>
             ))}
           </div>
         </div>
-
         {/* Body */}
-        <div style={{ padding: '24px', flex: 1 }}>
+        <div style={{ padding: '28px 24px 24px', flex: 1 }}>
           {tab === 'breathing' && <BreathingTab />}
           {tab === 'walking'   && <WalkingTab />}
           {tab === 'music'     && <MusicTab />}

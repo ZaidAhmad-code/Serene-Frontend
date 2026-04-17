@@ -1,5 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+interface EmergencyPanelProps {
+  forceOpen?: boolean;
+  onDismiss?: () => void;
+}
 
 const CONTACTS = [
   { name: 'Emergency Services', number: '911', desc: 'Immediate danger' },
@@ -22,44 +27,106 @@ const PhoneIcon = () => (
   </svg>
 );
 
-export default function EmergencyPanel() {
+export default function EmergencyPanel({ forceOpen, onDismiss }: EmergencyPanelProps) {
   const [open, setOpen] = useState(false);
+
+  // Auto-open when crisis is detected from chat
+  useEffect(() => {
+    if (forceOpen) setOpen(true);
+  }, [forceOpen]);
+
+  const handleClose = () => {
+    setOpen(false);
+    onDismiss?.();
+  };
 
   return (
     <>
+      {/* Overlay when force-opened */}
+      {forceOpen && open && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 998,
+            background: 'rgba(184,90,74,0.08)',
+            backdropFilter: 'blur(2px)',
+          }}
+          onClick={handleClose}
+        />
+      )}
+
       {/* Panel */}
       <div
         style={{
           position: 'fixed',
           zIndex: 999,
-          bottom: '80px',
-          right: '24px',
-          width: '340px',
-          maxHeight: open ? '80vh' : '0',
+          bottom: forceOpen && open ? '50%' : '80px',
+          right: forceOpen && open ? '50%' : '24px',
+          transform: forceOpen && open ? 'translate(50%, 50%)' : 'none',
+          width: forceOpen && open ? 'min(420px, 92vw)' : '340px',
+          maxHeight: open ? '85vh' : '0',
           opacity: open ? 1 : 0,
           pointerEvents: open ? 'all' : 'none',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderTop: `3px solid var(--danger)`,
           borderRadius: '18px',
-          boxShadow: 'var(--shadow-lg)',
+          boxShadow: forceOpen && open
+            ? '0 25px 80px rgba(184,90,74,0.25), 0 8px 32px rgba(0,0,0,0.2)'
+            : 'var(--shadow-lg)',
           overflow: 'hidden',
-          transition: 'max-height 0.3s ease, opacity 0.2s ease',
+          transition: 'max-height 0.3s ease, opacity 0.2s ease, transform 0.3s ease, bottom 0.3s ease, right 0.3s ease',
         }}
       >
-        <div style={{ overflowY: 'auto', maxHeight: '70vh', padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span style={{ color: 'var(--danger)' }}><AlertIcon /></span>
-            <h3
+        <div style={{ overflowY: 'auto', maxHeight: '80vh', padding: '24px' }}>
+          {/* Crisis alert banner — shown when auto-opened by AI detection */}
+          {forceOpen && open && (
+            <div style={{
+              background: 'rgba(184,90,74,0.1)',
+              border: '1px solid rgba(184,90,74,0.3)',
+              borderRadius: '12px',
+              padding: '14px 16px',
+              marginBottom: '18px',
+              display: 'flex',
+              gap: '10px',
+              alignItems: 'flex-start',
+            }}>
+              <span style={{ fontSize: '20px', flexShrink: 0 }}>🚨</span>
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--danger)', margin: '0 0 4px' }}>
+                  We detected a moment of distress
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                  You are not alone. These resources are here for you right now. You matter.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: 'var(--danger)' }}><AlertIcon /></span>
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  color: 'var(--danger)',
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  margin: 0,
+                }}
+              >
+                Crisis Support
+              </h3>
+            </div>
+            <button
+              onClick={handleClose}
               style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                color: 'var(--danger)',
-                fontFamily: "'DM Serif Display', Georgia, serif",
+                width: '28px', height: '28px', borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-primary)', color: 'var(--text-muted)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '16px', lineHeight: 1,
               }}
-            >
-              Crisis Support
-            </h3>
+            >×</button>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.6 }}>
             If you or someone you know is in crisis, please reach out immediately.
@@ -128,19 +195,29 @@ export default function EmergencyPanel() {
           fontWeight: 600,
           fontSize: '13px',
           letterSpacing: '0.01em',
-          background: 'var(--danger)',
+          background: forceOpen ? 'var(--danger)' : 'var(--danger)',
           color: '#fff',
           border: 'none',
-          boxShadow: '0 4px 16px rgba(184,90,74,0.35)',
+          boxShadow: forceOpen
+            ? '0 4px 20px rgba(184,90,74,0.5), 0 0 0 4px rgba(184,90,74,0.15)'
+            : '0 4px 16px rgba(184,90,74,0.35)',
           cursor: 'pointer',
           transition: 'all 0.2s',
+          animation: forceOpen ? 'urgentPulse 1.5s ease-in-out infinite' : 'none',
         }}
         onMouseEnter={e => { (e.currentTarget).style.transform = 'translateY(-2px)'; }}
         onMouseLeave={e => { (e.currentTarget).style.transform = 'translateY(0)'; }}
       >
         <AlertIcon />
-        Crisis Support
+        {forceOpen ? '⚠️ Immediate Help' : 'Crisis Support'}
       </button>
+
+      <style>{`
+        @keyframes urgentPulse {
+          0%, 100% { box-shadow: 0 4px 20px rgba(184,90,74,0.5), 0 0 0 4px rgba(184,90,74,0.15); }
+          50% { box-shadow: 0 4px 24px rgba(184,90,74,0.7), 0 0 0 8px rgba(184,90,74,0.08); }
+        }
+      `}</style>
     </>
   );
 }

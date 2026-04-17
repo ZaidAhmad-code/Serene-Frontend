@@ -22,6 +22,8 @@ export default function Home() {
     sessions,
     currentSessionId,
     isStreaming,
+    crisisDetected,
+    dismissCrisis,
     loadSessions,
     loadSession,
     startNewChat,
@@ -208,7 +210,7 @@ export default function Home() {
         </div>
       </div>
 
-      <EmergencyPanel />
+      <EmergencyPanel forceOpen={crisisDetected} onDismiss={dismissCrisis} />
       <Toast toasts={toasts} removeToast={removeToast} />
       <DashboardModal
         isOpen={dashboardOpen}
